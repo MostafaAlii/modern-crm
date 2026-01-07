@@ -30,7 +30,6 @@ if (!function_exists('get_guard')) {
             ->reject(fn($guard) => $guard === 'web')
             ->values()
             ->toArray();
-        //return array_keys(config('auth.guards'));
     }
 }
 

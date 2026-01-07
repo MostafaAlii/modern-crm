@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 /*
 |--------------------------------------------------------------------------
 | Dashboard Routes
@@ -12,9 +13,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
-    Route::get('dashboard', Dashboard\DashboardController::class)->name('dashboard');
-});
-Route::prefix('client')->name('client.')->middleware('auth:client')->group(function () {
-    Route::get('dashboard', Dashboard\DashboardController::class)->name('dashboard');
-});
+
+Route::group(
+    [
+        'prefix' => LaravelLocalization::setLocale(),
+        'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath',],
+    ],
+    function () {
+        Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
+            Route::get('dashboard', Dashboard\DashboardController::class)->name('dashboard');
+        });
+        Route::prefix('client')->name('client.')->middleware('auth:client')->group(function () {
+            Route::get('dashboard', Dashboard\DashboardController::class)->name('dashboard');
+        });
+    }
+);

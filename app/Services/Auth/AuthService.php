@@ -1,15 +1,12 @@
 <?php
 namespace App\Services\Auth;
+use Illuminate\Support\Facades\Auth;
 class AuthService {
-    public function __construct(protected AuthStrategyInterface $strategy) {
-        $this->strategy = $strategy;
+    public function login(string $guard, array $credentials): bool {
+        return Auth::guard($guard)->attempt($credentials);
     }
 
-    public function login(array $credentials): bool {
-        return $this->strategy->login($credentials);
-    }
-
-    public function logout(): void {
-        $this->strategy->logout();
+    public function logout(string $guard): void {
+        Auth::guard($guard)->logout();
     }
 }

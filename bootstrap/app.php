@@ -15,10 +15,19 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            /**** OTHER MIDDLEWARE ALIASES ****/
+            'localize'                => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes::class,
+            'localizationRedirect'    => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
+            'localeSessionRedirect'   => \Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class,
+            'localeCookieRedirect'    => \Mcamara\LaravelLocalization\Middleware\LocaleCookieRedirect::class,
+            'localeViewPath'          => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationViewPath::class,
+        ]);
         $middleware->redirectGuestsTo(function ($request) {
-            $segments = $request->segments();
-            $guards = get_guard();
-            $guard = collect($segments)->first(fn($segment) => in_array($segment, $guards));
+            $resolver = app(\App\Services\Auth\GuardResolver::class);
+            $guard = $resolver->resolveFromSegments(
+                $request->segments()
+            );
             return match ($guard) {
                 'admin'  => route('admin.login'),
                 'client' => route('client.login'),
