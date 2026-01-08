@@ -9,10 +9,7 @@ class ClientSeeder extends Seeder
 {
     public function run(): void
     {
-        // امسح البيانات القديمة
         DB::table('clients')->truncate();
-
-        // إضافة client نشط واحد
         DB::table('clients')->insert([
             'name' => 'M Mohamed',
             'email' => 'm@test.com',
@@ -23,17 +20,18 @@ class ClientSeeder extends Seeder
         ]);
 
         $clients = [];
+        $statuses = ['inactive', 'blocked', 'suspended'];
+
         for ($i = 1; $i <= 9; $i++) {
             $clients[] = [
                 'name' => fake()->name(),
                 'email' => fake()->unique()->safeEmail(),
                 'password' => Hash::make('123123'),
-                'status' => 'inactive',
+                'status' => fake()->randomElement($statuses),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
-
         DB::table('clients')->insert($clients);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace App\Services\Auth;
 interface AuthStrategyInterface {
-    public function login(array $credentials): bool;
+    public function attempt(array $credentials): mixed;
+    public function loginUser(mixed $user): void;
     public function logout(): void;
 }

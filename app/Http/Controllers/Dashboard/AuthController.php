@@ -22,12 +22,13 @@ class AuthController extends Controller {
     public function login(Request $request) {
         $guard = $this->guardResolver->resolve($request);
         $credentials = $request->only('email', 'password');
-        if ($this->authService->login($guard, $credentials)) {
+        $result = $this->authService->login($guard, $credentials);
+        if ($result->success) {
             $request->session()->regenerate();
             return redirect()->route($guard . '.dashboard');
         }
         return back()->withErrors([
-            'email' => 'Invalid credentials',
+            'email' => $result->reason,
         ]);
     }
 

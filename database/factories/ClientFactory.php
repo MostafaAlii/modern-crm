@@ -16,7 +16,7 @@ class ClientFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('123123'),
-            'status' => 'inactive',
+            'status' => fake()->randomElement(['active', 'inactive', 'blocked', 'suspended']),
         ];
     }
 
@@ -31,6 +31,20 @@ class ClientFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'status' => 'inactive',
+        ]);
+    }
+
+    public function blocked(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 'blocked',
+        ]);
+    }
+
+    public function suspended(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 'suspended',
         ]);
     }
 
