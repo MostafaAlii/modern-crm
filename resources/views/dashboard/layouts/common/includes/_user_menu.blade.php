@@ -35,9 +35,12 @@
             </li>
             <hr class="dropdown-divider">
             <li class="dropdown-item">
-                <form
-                    action="{{ check_guard() === 'admin' ? route('admin.logout') : (check_guard() === 'client' ? route('client.logout') : '') }}"
-                method="POST">
+                @php
+                $authContext = (new \App\Services\Auth\GuardResolver())->resolve(request());
+                $guard = $authContext['guard'];
+                @endphp
+
+                <form action="{{ route($guard . '.logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="bg-transparent border-0 drp-link w-100 text-start">
                         <i data-feather="log-out"></i>

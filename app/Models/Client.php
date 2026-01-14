@@ -22,4 +22,9 @@ class Client extends Authenticatable {
     {
         return $this->status === ClientStatus::BLOCKED->value;
     }
+
+    public function companies()
+    {
+        return $this->hasMany(Company::class);
+    }
 }
