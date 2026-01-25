@@ -1,7 +1,10 @@
 <?php
+
 namespace App\Services\Auth\Strategy;
+
 use Illuminate\Support\Facades\{Auth, Hash};
 use App\Services\Auth\AuthStrategyInterface;
+use Tymon\JWTAuth\Facades\JWTAuth;
 abstract class BaseAuthStrategy implements AuthStrategyInterface {
     protected string $guard;
     protected string $modelClass;
@@ -18,8 +21,16 @@ abstract class BaseAuthStrategy implements AuthStrategyInterface {
         return $user;
     }
 
-    public function loginUser(mixed $user): void {
-        Auth::guard($this->guard)->login($user);
+    public function loginUser(mixed $user, string $context = 'web'): ?string {
+        if ($context === 'web') {
+            Auth::guard($this->guard)->login($user);
+            return null;
+        }
+        if ($context === 'api') {
+            $token = JWTAuth::fromUser($user);
+            return $token;
+        }
+        return null;
     }
 
     public function logout(): void {

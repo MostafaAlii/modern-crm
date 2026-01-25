@@ -7,8 +7,7 @@ namespace App\Models\Concerns;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 
-trait HasUuid
-{
+trait HasUuid {
     protected static function bootHasUuid(): void
     {
         static::creating(function (Model $model) {

@@ -5,7 +5,7 @@ class AuthResult {
         public bool $success,
         public ?string $reason = null,
         public mixed $user = null,
-        public ?string $token = null,       // JWT token
-        public ?\DateTime $expires_at = null, // Expiration
+        public ?string $token = null,
+        public ?\DateTime $expires_at = null, 
     ) {}
 }

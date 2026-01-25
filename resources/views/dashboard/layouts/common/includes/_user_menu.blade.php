@@ -38,6 +38,7 @@
                 @php
                 $authContext = (new \App\Services\Auth\GuardResolver())->resolve(request());
                 $guard = $authContext['guard'];
+            
                 @endphp
 
                 <form action="{{ route($guard . '.logout') }}" method="POST">

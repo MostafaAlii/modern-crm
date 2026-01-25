@@ -1,28 +1,8 @@
 import { useState } from "react";
-import {
-    HomeIcon,
-    UserIcon,
-    Cog6ToothIcon,
-    ChartBarIcon,
-    FolderIcon,
-    DocumentIcon,
-    ShoppingCartIcon,
-    CreditCardIcon,
-    TruckIcon,
-    UserGroupIcon,
-    ShieldCheckIcon,
-    BellIcon,
-    ChevronDownIcon,
-} from "@heroicons/react/24/outline";
-
-interface MenuItem {
-    name: string;
-    icon: JSX.Element;
-    children?: MenuItem[];
-    badge?: string | number;
-    badgeType?: "info" | "warning" | "danger";
-}
-
+import { Link, useLocation } from "react-router-dom";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { menuItems } from "../../data/menuItems";
+import type { MenuItemType } from "../../data/menuItems";
 interface SidebarProps {
     rtl?: boolean;
     darkMode?: boolean;
@@ -30,63 +10,11 @@ interface SidebarProps {
 
 export default function Sidebar({ rtl = false, darkMode = false }: SidebarProps) {
     const [collapsed, setCollapsed] = useState(false);
-    const [activeItem, setActiveItem] = useState("Dashboard");
     const [openMenus, setOpenMenus] = useState<string[]>([]);
-
-    const menuItems: MenuItem[] = [
-        { name: "Dashboard", icon: <HomeIcon className="w-5 h-5" /> },
-        {
-            name: "Analytics",
-            icon: <ChartBarIcon className="w-5 h-5" />,
-            badge: "New",
-            badgeType: "info",
-            children: [
-                { name: "Overview", icon: <ChartBarIcon className="w-4 h-4" /> },
-                { name: "Reports", icon: <DocumentIcon className="w-4 h-4" /> },
-                { name: "Statistics", icon: <ChartBarIcon className="w-4 h-4" /> },
-            ],
-        },
-        {
-            name: "E-Commerce",
-            icon: <ShoppingCartIcon className="w-5 h-5" />,
-            badge: 5,
-            badgeType: "danger",
-            children: [
-                { name: "Products", icon: <FolderIcon className="w-4 h-4" /> },
-                {
-                    name: "Orders",
-                    icon: <TruckIcon className="w-4 h-4" />,
-                    children: [
-                        { name: "All Orders", icon: <DocumentIcon className="w-4 h-4" /> },
-                        { name: "Pending", icon: <BellIcon className="w-4 h-4" />, badge: 12, badgeType: "warning" },
-                        { name: "Completed", icon: <ShieldCheckIcon className="w-4 h-4" /> },
-                    ],
-                },
-                { name: "Payments", icon: <CreditCardIcon className="w-4 h-4" /> },
-            ],
-        },
-        {
-            name: "Users",
-            icon: <UserIcon className="w-5 h-5" />,
-            children: [
-                { name: "All Users", icon: <UserGroupIcon className="w-4 h-4" /> },
-                { name: "Customers", icon: <UserIcon className="w-4 h-4" /> },
-                { name: "Admins", icon: <ShieldCheckIcon className="w-4 h-4" /> },
-            ],
-        },
-        {
-            name: "Settings",
-            icon: <Cog6ToothIcon className="w-5 h-5" />,
-            children: [
-                { name: "General", icon: <Cog6ToothIcon className="w-4 h-4" /> },
-                { name: "Security", icon: <ShieldCheckIcon className="w-4 h-4" /> },
-                { name: "Notifications", icon: <BellIcon className="w-4 h-4" /> },
-            ],
-        },
-    ];
+    const location = useLocation();
 
     // Accordion behavior: close siblings when opening a menu
-    const toggleMenu = (menuPath: string, level: number) => {
+    const toggleMenu = (menuPath: string) => {
         setOpenMenus((prev) => {
             const isCurrentlyOpen = prev.includes(menuPath);
 
@@ -115,53 +43,53 @@ export default function Sidebar({ rtl = false, darkMode = false }: SidebarProps)
 
     const isMenuOpen = (menuPath: string) => openMenus.includes(menuPath);
 
-    const handleItemClick = (itemName: string, menuPath: string, hasChildren: boolean, level: number) => {
+    // Check if current path matches item link
+    const isActive = (link?: string) => {
+        if (!link) return false;
+        return location.pathname === link || location.pathname.startsWith(link + "/");
+    };
+
+    const handleItemClick = (item: MenuItemType, menuPath: string, hasChildren: boolean) => {
         if (hasChildren) {
-            if (!collapsed) toggleMenu(menuPath, level);
-        } else {
-            setActiveItem(itemName);
+            if (!collapsed) toggleMenu(menuPath);
         }
     };
 
-    const renderMenuItem = (item: MenuItem, level = 0, parentPath = "") => {
+    const renderMenuItem = (item: MenuItemType, level = 0, parentPath = "") => {
         const hasChildren = item.children && item.children.length > 0;
         const menuPath = parentPath ? `${parentPath}>${item.name}` : item.name;
         const isOpen = isMenuOpen(menuPath);
-        const isActive = activeItem === item.name;
+        const isItemActive = isActive(item.link);
         const paddingStart = rtl ? "pr" : "pl";
         const paddingClass = collapsed ? "" : `${paddingStart}-${level * 4 + 3}`;
 
-        // Badge colors
-        const badgeColor =
-            item.badgeType === "info"
-                ? "bg-blue-500 shadow-lg shadow-blue-500/50"
-                : item.badgeType === "warning"
-                    ? "bg-yellow-500 shadow-lg shadow-yellow-500/50"
-                    : item.badgeType === "danger"
-                        ? "bg-red-500 shadow-lg shadow-red-500/50"
-                        : "bg-red-500 shadow-lg shadow-red-500/50";
+        // Wrapper component - Link if has link, button otherwise
+        const WrapperComponent = item.link && !hasChildren ? Link : "button";
+        const wrapperProps = item.link && !hasChildren
+            ? { to: item.link }
+            : { onClick: () => handleItemClick(item, menuPath, hasChildren) };
 
         return (
             <div key={menuPath} className="flex flex-col w-full group relative">
                 {/* Main Menu Item */}
-                <button
-                    onClick={() => handleItemClick(item.name, menuPath, hasChildren, level)}
+                <WrapperComponent
+                    {...wrapperProps}
                     className={`
-            w-full flex items-center gap-3 p-3 rounded-lg
-            text-slate-700 dark:text-slate-200
-            hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 
-            dark:hover:from-indigo-900 dark:hover:to-indigo-800
-            hover:text-indigo-600 dark:hover:text-indigo-300
-            hover:shadow-md hover:scale-[1.02]
-            active:scale-[0.98]
-            transition-all duration-300 ease-out
-            ${collapsed ? "justify-center" : paddingClass}
-            ${isActive && !hasChildren
+                        w-full flex items-center gap-3 p-3 rounded-lg
+                        text-slate-700 dark:text-slate-200
+                        hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 
+                        dark:hover:from-indigo-900 dark:hover:to-indigo-800
+                        hover:text-indigo-600 dark:hover:text-indigo-300
+                        hover:shadow-md hover:scale-[1.02]
+                        active:scale-[0.98]
+                        transition-all duration-300 ease-out
+                        ${collapsed ? "justify-center" : paddingClass}
+                        ${isItemActive && !hasChildren
                             ? "bg-gradient-to-r from-indigo-100 to-indigo-50 dark:from-indigo-900 dark:to-indigo-800 text-indigo-700 dark:text-indigo-300 font-semibold shadow-md"
                             : ""
                         }
-            ${level > 0 ? "text-sm" : ""}
-          `}
+                        ${level > 0 ? "text-sm" : ""}
+                    `}
                 >
                     {/* Icon with animation */}
                     <span className={`flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-12 scale-110" : ""}`}>
@@ -172,51 +100,37 @@ export default function Sidebar({ rtl = false, darkMode = false }: SidebarProps)
                         <>
                             <span className="flex-1 text-start transition-all duration-200">{item.name}</span>
 
-                            {/* Badge with pulse animation */}
-                            {item.badge && (
-                                <span
-                                    className={`
-                    px-2 py-0.5 text-xs font-semibold text-white rounded-full 
-                    ${badgeColor}
-                    animate-pulse
-                    transition-all duration-300
-                  `}
-                                >
-                                    {item.badge}
-                                </span>
-                            )}
-
                             {/* Chevron with smooth rotation */}
                             {hasChildren && (
                                 <ChevronDownIcon
                                     className={`
-                    w-4 h-4 transition-all duration-500 ease-out
-                    ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : "rotate-0"}
-                  `}
+                                        w-4 h-4 transition-all duration-500 ease-out
+                                        ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : "rotate-0"}
+                                    `}
                                 />
                             )}
                         </>
                     )}
-                </button>
+                </WrapperComponent>
 
                 {/* Submenu with slide + fade animation */}
                 {hasChildren && !collapsed && (
                     <div
                         className={`
-              overflow-hidden transition-all duration-500 ease-in-out
-              ${isOpen
+                            overflow-hidden transition-all duration-500 ease-in-out
+                            ${isOpen
                                 ? "max-h-[1000px] opacity-100 mt-1 translate-y-0"
                                 : "max-h-0 opacity-0 -translate-y-2"
                             }
-            `}
+                        `}
                     >
                         <div
                             className={`
-                flex flex-col space-y-1 
-                ${rtl ? "mr-2" : "ml-2"}
-                border-l-2 border-indigo-200 dark:border-indigo-800
-                pl-2
-              `}
+                                flex flex-col space-y-1 
+                                ${rtl ? "mr-2" : "ml-2"}
+                                border-l-2 border-indigo-200 dark:border-indigo-800
+                                pl-2
+                            `}
                         >
                             {item.children!.map((child) => renderMenuItem(child, level + 1, menuPath))}
                         </div>
@@ -227,24 +141,19 @@ export default function Sidebar({ rtl = false, darkMode = false }: SidebarProps)
                 {collapsed && (
                     <div
                         className={`
-              absolute z-50 top-2 ${rtl ? "right-full mr-2" : "left-full ml-2"}
-              whitespace-nowrap px-3 py-2 rounded-lg 
-              bg-gray-900 dark:bg-gray-700 text-white text-sm
-              opacity-0 invisible group-hover:opacity-100 group-hover:visible
-              transition-all duration-300 ease-out
-              shadow-xl
-              before:content-[''] before:absolute before:top-1/2 before:-translate-y-1/2
-              ${rtl ? "before:right-[-6px]" : "before:left-[-6px]"}
-              before:border-8 before:border-transparent
-              ${rtl ? "before:border-r-gray-900 dark:before:border-r-gray-700" : "before:border-l-gray-900 dark:before:border-l-gray-700"}
-            `}
+                            absolute z-50 top-2 ${rtl ? "right-full mr-2" : "left-full ml-2"}
+                            whitespace-nowrap px-3 py-2 rounded-lg 
+                            bg-gray-900 dark:bg-gray-700 text-white text-sm
+                            opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                            transition-all duration-300 ease-out
+                            shadow-xl
+                            before:content-[''] before:absolute before:top-1/2 before:-translate-y-1/2
+                            ${rtl ? "before:right-[-6px]" : "before:left-[-6px]"}
+                            before:border-8 before:border-transparent
+                            ${rtl ? "before:border-r-gray-900 dark:before:border-r-gray-700" : "before:border-l-gray-900 dark:before:border-l-gray-700"}
+                        `}
                     >
                         {item.name}
-                        {item.badge && (
-                            <span className={`ml-2 px-1.5 py-0.5 text-xs rounded ${badgeColor}`}>
-                                {item.badge}
-                            </span>
-                        )}
                     </div>
                 )}
             </div>
@@ -254,13 +163,13 @@ export default function Sidebar({ rtl = false, darkMode = false }: SidebarProps)
     return (
         <aside
             className={`
-        bg-white dark:bg-gray-800 
-        border-${rtl ? "l" : "r"} border-slate-200 dark:border-gray-700 
-        min-h-screen flex flex-col 
-        transition-all duration-500 ease-in-out
-        shadow-xl
-        ${collapsed ? "w-20" : "w-64"}
-      `}
+                bg-white dark:bg-gray-800 
+                border-${rtl ? "l" : "r"} border-slate-200 dark:border-gray-700 
+                min-h-screen flex flex-col 
+                transition-all duration-500 ease-in-out
+                shadow-xl
+                ${collapsed ? "w-20" : "w-64"}
+            `}
             dir={rtl ? "rtl" : "ltr"}
         >
             {/* Header */}

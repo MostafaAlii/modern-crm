@@ -13,12 +13,9 @@ class GuardResolver {
         $supportedLocales = array_keys(LaravelLocalization::getSupportedLocales());
         $segments = array_filter($segments, fn($seg) => !in_array($seg, $supportedLocales));
         $segments = array_values($segments);
-        //dd($guards);
-        // Default
         $context = 'web';
         $baseGuard = $guards[0] ?? 'web';
         $finalGuard = $baseGuard;
-
         if (!empty($segments)) {
             if ($segments[0] === 'api') {
                 $context = 'api';
@@ -30,9 +27,7 @@ class GuardResolver {
                 $baseGuard = $guards[0] ?? 'web';
             }
         }
-
         $finalGuard = $context === 'api' ? $baseGuard . '_api' : $baseGuard;
-
         return [
             'base'    => $baseGuard,
             'context' => $context,

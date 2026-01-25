@@ -4,7 +4,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Enums\Client\ClientStatus;
-class Client extends Authenticatable {
+use Tymon\JWTAuth\Contracts\JWTSubject;
+class Client extends Authenticatable implements JWTSubject {
     use HasFactory, Notifiable;
     protected $table = 'clients';
     protected $fillable = ['name', 'email', 'password', 'status'];
@@ -12,6 +13,15 @@ class Client extends Authenticatable {
     protected $casts = [
         'status' => ClientStatus::class,
     ];
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     public function isActive(): bool
     {

@@ -11,7 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
             collect(File::allFiles(base_path('routes')))
                 ->filter(fn($file) => $file->getExtension() === 'php')
                 ->reject(fn($file) => in_array($file->getFilename(), $excludedFiles))
-                ->each(fn($file) => Route::middleware('web')->group($file->getPathname()));
+                ->each(function ($file) {
+                    if ($file->getFilename() === 'api.php') {
+                        Route::prefix('api')->middleware('api')->group($file->getPathname());
+                    } else {
+                        Route::middleware('web')->group($file->getPathname());
+                    }
+                });
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
