@@ -5,8 +5,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Enums\Client\ClientStatus;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Models\Concerns\HasRefreshToken;
 class Client extends Authenticatable implements JWTSubject {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRefreshToken;
     protected $table = 'clients';
     protected $fillable = ['name', 'email', 'password', 'status'];
     protected $hidden = ['password', 'remember_token'];

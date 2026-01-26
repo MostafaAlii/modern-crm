@@ -8,7 +8,7 @@ class AuthController extends Controller {
     use ApiResponseTrait;
     public function __construct(
         protected AuthService $authService,
-        protected GuardResolver $guardResolver
+        protected GuardResolver $guardResolver,
     ) {}
 
     public function showLoginForm(Request $request) {
@@ -40,12 +40,28 @@ class AuthController extends Controller {
             $request->session()->regenerate();
             return redirect()->route($authContext['guard'] . '.dashboard');
         }
-        if ($authContext['context'] === 'api') {
+        /*if ($authContext['context'] === 'api') {
             return $this->successResponse(
                 data: [
                     'user'  => $result->user,
                     'token' => $result->token,
                 ],
+                message: 'Login successful',
+                meta: [
+                    'expires_at' => $result->expires_at,
+                ]
+            );
+        }*/
+        if ($authContext['context'] === 'api') {
+            $responseData = [
+                'user'  => $result->user,
+                'token' => $result->token,
+            ];
+            if ($result->refresh_token) {
+                $responseData['refresh_token'] = $result->refresh_token;
+            }
+            return $this->successResponse(
+                data: $responseData,
                 message: 'Login successful',
                 meta: [
                     'expires_at' => $result->expires_at,

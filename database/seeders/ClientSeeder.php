@@ -9,7 +9,7 @@ class ClientSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('clients')->truncate();
+        //DB::table('clients')->truncate();
         DB::table('clients')->insert([
             'name' => 'M Mohamed',
             'email' => 'm@test.com',

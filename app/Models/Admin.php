@@ -7,8 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Enums\Admin\{AdminStatus, AdminType};
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Models\Concerns\HasRefreshToken;
 class Admin extends Authenticatable implements JWTSubject {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRefreshToken;
     protected $table = 'admins';
     protected $fillable = ['name', 'email', 'password', 'status', 'type'];
     protected $hidden = ['password', 'remember_token'];

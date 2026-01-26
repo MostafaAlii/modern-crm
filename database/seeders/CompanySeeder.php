@@ -6,7 +6,7 @@ class CompanySeeder extends Seeder
 {
     public function run(): void
     {
-        Company::truncate();
+        //Company::truncate();
 
         for ($i = 0; $i < 10; $i++) {
             Company::create([

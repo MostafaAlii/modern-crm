@@ -298,4 +298,10 @@ return [
 
     ],
 
+    'refresh_ttl' => env('JWT_REFRESH_TTL', 43200), // 30 days in minutes
+
+    // Rate limiting
+    'refresh_max_attempts' => env('JWT_REFRESH_MAX_ATTEMPTS', 5),
+    'refresh_rate_limit_window' => env('JWT_REFRESH_RATE_LIMIT_WINDOW', 60),
+
 ];

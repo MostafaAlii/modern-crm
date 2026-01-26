@@ -21,13 +21,38 @@ abstract class BaseAuthStrategy implements AuthStrategyInterface {
         return $user;
     }
 
-    public function loginUser(mixed $user, string $context = 'web'): ?string {
+    /*public function loginUser(mixed $user, string $context = 'web'): ?string {
         if ($context === 'web') {
             Auth::guard($this->guard)->login($user);
             return null;
         }
         if ($context === 'api') {
             $token = JWTAuth::fromUser($user);
+            return $token;
+        }
+        return null;
+    }*/
+    public function loginUser(mixed $user, string $context = 'web'): ?string
+    {
+        if ($context === 'web') {
+            Auth::guard($this->guard)->login($user);
+            return null;
+        }
+
+        if ($context === 'api') {
+            // تحديد الـ guard الصحيح للـ API
+            $apiGuard = $this->guard . '_api';
+            $token = JWTAuth::fromUser($user);
+
+            // إضافة custom claims
+            if ($token) {
+                try {
+                    $payload = JWTAuth::setToken($token)->getPayload();
+                    // يمكنك إضافة claims إضافية هنا إذا احتجت
+                } catch (\Exception $e) {
+                    // تجاهل الخطأ
+                }
+            }
             return $token;
         }
         return null;

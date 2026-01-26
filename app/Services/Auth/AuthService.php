@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Services\Auth;
-
+use App\Models\RefreshToken;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Auth\Result\AuthResult;
 use App\Enums\Admin\AdminStatus;
 use App\Enums\Client\ClientStatus;
 use App\Services\Auth\Strategy;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Services\Auth\TokenService;
+use Carbon\Carbon;
 class AuthService {
     protected array $strategyMap = [];
     protected array $inactiveStatuses = [
@@ -15,7 +17,7 @@ class AuthService {
         ClientStatus::IN_ACTIVE->value,
     ];
 
-    public function __construct(protected GuardResolver $guardResolver) {
+    public function __construct(protected GuardResolver $guardResolver,protected TokenService $tokenService) {
         $this->strategyMap = [
             'admin'  => new Strategy\AdminAuthStrategy(),
             'client' => new Strategy\ClientAuthStrategy(),
@@ -55,15 +57,38 @@ class AuthService {
             }
             return new AuthResult(false, $statusError);
         }
-        $token = $strategy->loginUser($user, $context);
-        return new AuthResult(true, null, $user, $token);
+        $accessToken = $strategy->loginUser($user, $context);
+        $refreshToken = null;
+        $expiresAt = null;
+        if ($context === 'api' && $accessToken) {
+            $payload = JWTAuth::setToken($accessToken)->getPayload();
+            $expiresAt = Carbon::createFromTimestamp($payload->get('exp'));
+            $accessTokenId = $payload->get('jti');
+            $refreshTokenModel = $this->tokenService->generateRefreshToken(
+                $user,
+                $accessTokenId, [
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]
+            );
+            $refreshToken = $refreshTokenModel->token_id;
+        }
+        return new AuthResult(true, null, $user, $accessToken, $expiresAt, $refreshToken);
     }
 
     public function logout(array $authContext): void {
         $guard = $authContext['guard'] ?? 'web';
         if (str_contains($guard, '_api')) {
             try {
-                JWTAuth::invalidate(JWTAuth::getToken());
+                $token = JWTAuth::getToken();
+                JWTAuth::invalidate($token);
+                try {
+                    $payload = JWTAuth::getPayload($token);
+                    $accessTokenId = $payload->get('jti');
+                    RefreshToken::where('access_token_id', $accessTokenId)
+                        ->update(['is_revoked' => true, 'revoked_at' => now()]);
+                } catch (\Exception $e) {
+                }
             } catch (\Exception $e) {
             }
         } else {
