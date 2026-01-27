@@ -1,16 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
-interface Props {
-    children: React.ReactNode;
-}
-
-export default function DashboardLayout({ children }: Props) {
+export default function DashboardLayout() {
     const [darkMode, setDarkMode] = useState(false);
     const [rtl, setRtl] = useState(false);
 
-    // ضيف ده
     useEffect(() => {
         if (darkMode) {
             document.documentElement.classList.add("dark");
@@ -28,7 +24,9 @@ export default function DashboardLayout({ children }: Props) {
             <Sidebar darkMode={darkMode} rtl={rtl} />
             <div className="flex-1 flex flex-col">
                 <Navbar darkMode={darkMode} setDarkMode={setDarkMode} rtl={rtl} setRtl={setRtl} />
-                <main className="flex-1 p-6">{children}</main>
+                <main className="flex-1 p-6">
+                    <Outlet /> {/* هذا يعرض الصفحات الفرعية */}
+                </main>
             </div>
         </div>
     );

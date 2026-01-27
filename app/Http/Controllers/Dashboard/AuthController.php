@@ -40,18 +40,6 @@ class AuthController extends Controller {
             $request->session()->regenerate();
             return redirect()->route($authContext['guard'] . '.dashboard');
         }
-        /*if ($authContext['context'] === 'api') {
-            return $this->successResponse(
-                data: [
-                    'user'  => $result->user,
-                    'token' => $result->token,
-                ],
-                message: 'Login successful',
-                meta: [
-                    'expires_at' => $result->expires_at,
-                ]
-            );
-        }*/
         if ($authContext['context'] === 'api') {
             $responseData = [
                 'user'  => $result->user,

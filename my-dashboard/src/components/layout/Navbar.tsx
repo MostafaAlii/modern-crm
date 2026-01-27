@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { BellIcon, SunIcon, MoonIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import {
+    BellIcon,
+    SunIcon,
+    MoonIcon,
+    ChevronDownIcon,
+    UserIcon,
+    Cog6ToothIcon,
+    ArrowRightOnRectangleIcon
+} from "@heroicons/react/24/outline";
+import { useAuth } from "../../context/AuthContext"; // تأكد من المسار الصحيح
 
 type Lang = "ltr" | "rtl";
 
@@ -12,6 +21,7 @@ interface NavbarProps {
 
 export default function Navbar({ darkMode, setDarkMode, rtl, setRtl }: NavbarProps) {
     const [openDropdown, setOpenDropdown] = useState<"avatar" | "notif" | "lang" | null>(null);
+    const { logout, user } = useAuth(); // إضافة useAuth
 
     const toggleDropdown = (name: "avatar" | "notif" | "lang") => {
         setOpenDropdown(openDropdown === name ? null : name);
@@ -22,9 +32,16 @@ export default function Navbar({ darkMode, setDarkMode, rtl, setRtl }: NavbarPro
         setOpenDropdown(null);
     };
 
+    const handleLogout = () => {
+        logout();
+        window.location.href = "/admin/login";
+    };
+
     return (
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 flex items-center justify-between px-6 shadow-md relative z-10">
-            <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Dashboard</h1>
+            <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                Admin Dashboard
+            </h1>
 
             <div className="flex items-center gap-4">
                 {/* Notification */}
@@ -38,7 +55,7 @@ export default function Navbar({ darkMode, setDarkMode, rtl, setRtl }: NavbarPro
                     </button>
 
                     {openDropdown === "notif" && (
-                        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-xl p-3 z-50">
+                        <div className={`absolute mt-2 w-64 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-xl p-3 z-50 ${rtl ? "left-0" : "right-0"}`}>
                             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Notifications</p>
                             <div className="space-y-1 max-h-52 overflow-y-auto">
                                 {["New user registered", "Server rebooted", "Payment received"].map((text) => (
@@ -92,16 +109,42 @@ export default function Navbar({ darkMode, setDarkMode, rtl, setRtl }: NavbarPro
                 <div className="relative">
                     <div
                         onClick={() => toggleDropdown("avatar")}
-                        className="w-10 h-10 rounded-full bg-indigo-500 cursor-pointer ring-2 ring-indigo-300 hover:ring-indigo-400 transition-transform transform hover:scale-105"
-                    />
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold ring-2 ring-indigo-300 hover:ring-indigo-400 transition">
+                            {user?.name?.charAt(0) || "A"}
+                        </div>
+                        <ChevronDownIcon className={`w-4 h-4 text-slate-500 dark:text-slate-300 transition-transform ${openDropdown === "avatar" ? "rotate-180" : "rotate-0"}`} />
+                    </div>
 
                     {openDropdown === "avatar" && (
-                        <div className={`absolute mt-2 w-44 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-xl p-3 ${rtl ? "left-0" : "right-0"} z-50`}>
-                            {["Profile", "Settings", "Logout"].map((text) => (
-                                <a key={text} href="#" className="block px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-600 text-slate-700 dark:text-slate-200 transition text-right">
-                                    {text}
-                                </a>
-                            ))}
+                        <div className={`absolute mt-2 w-48 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-xl p-2 ${rtl ? "left-0" : "right-0"} z-50`}>
+                            <div className="px-3 py-2 border-b border-slate-200 dark:border-gray-600">
+                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                                    {user?.name || "Admin User"}
+                                </p>
+                                <p className="text-xs text-slate-600 dark:text-slate-400">
+                                    {user?.email || "admin@example.com"}
+                                </p>
+                            </div>
+
+                            <a href="/dashboard/profile" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-600 text-slate-700 dark:text-slate-200 transition">
+                                <UserIcon className="w-4 h-4" />
+                                Profile
+                            </a>
+
+                            <a href="/dashboard/settings" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-600 text-slate-700 dark:text-slate-200 transition">
+                                <Cog6ToothIcon className="w-4 h-4" />
+                                Settings
+                            </a>
+
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition text-left"
+                            >
+                                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                                Logout
+                            </button>
                         </div>
                     )}
                 </div>
